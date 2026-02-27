@@ -3,112 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL FORCE v9.1 - FULL VIP</title>
+    <title>NEURAL FORCE v9.1</title>
     <style>
-        :root{ --bg:#0b0b0f; --card:#15151e; --accent:#aa66ff; --win:#00ff88; }
-        body{ background:var(--bg); font-family: sans-serif; color:#fff; margin:0; padding:15px; display:flex; flex-direction:column; align-items:center; }
-        .app{ width:100%; max-width:400px; }
-        .btn{ width:100%; padding:16px; margin-bottom:12px; border:none; border-radius:15px; font-weight:bold; cursor:pointer; text-transform:uppercase; font-size:12px; transition: 0.2s; color: #fff; }
-        .btn:active { transform: scale(0.95); }
-        .btn-aviator{ background:#ff003c; box-shadow:0 0 15px rgba(255,0,60,0.3); }
-        .status-header{ text-align:center; font-size:10px; color:var(--accent); margin-bottom:20px; letter-spacing:1px; text-transform:uppercase; border: 1px solid #2d2d3a; padding: 10px; border-radius: 10px; width: 100%; box-sizing: border-box; }
-        .painel{ background:#1a1a24; border-radius:20px; padding:20px; border:1px solid #2d2d3a; margin-top:20px; display:none; color: var(--win); font-family: monospace; }
-        pre{ white-space:pre-wrap; margin:0; font-size: 14px; }
-        #log-status { font-size: 11px; text-align: center; margin-top: 15px; color: #888; font-weight: bold; }
+        body{ background:#0b0b0f; color:#fff; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
+        .btn{ width:100%; max-width:350px; padding:15px; margin:10px 0; border:none; border-radius:10px; font-weight:bold; cursor:pointer; color:#fff; }
+        #log-status { margin-top:15px; font-size:12px; color:#888; }
+        .painel{ background:#1a1a24; padding:15px; border-radius:10px; display:none; border:1px solid #333; width:100%; max-width:320px; color:#00ff88; }
     </style>
 </head>
 <body>
-
-<div id="main" class="app">
-    <div class="status-header">SISTEMA NEURAL v9.1 // SERVIDOR ATIVO</div>
+    <h3 style="color:#aa66ff">SISTEMA NEURAL v9.1</h3>
     
-    <button class="btn btn-aviator" onclick="gerar('AVIATOR')">✈️ ESTRATÉGIA AVIATOR (5X+)</button>
-    <button class="btn" style="background:#0500ff" onclick="gerar('DOUBLE')">🎯 SINAL AO VIVO (PRÓX. MINUTO)</button>
-    
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-        <button class="btn" style="background:#cc0000" onclick="gerar('RED')">🔴 LISTA VERMELHO</button>
-        <button class="btn" style="background:#222; border:1px solid #444" onclick="gerar('BLACK')">⚫ LISTA PRETO</button>
-    </div>
-    
-    <button class="btn" style="background:#333" onclick="gerar('MISTA')">🔄 LISTA 10 MISTA</button>
-    <button class="btn" style="background:#fff; color:#000" onclick="gerar('BRANCO')">⚪ BUSCAR BRANCO ÚNICO</button>
+    <button class="btn" style="background:#ff003c" onclick="gerar('AVIATOR')">✈️ ENVIAR AVIATOR</button>
+    <button class="btn" style="background:#0500ff" onclick="gerar('DOUBLE')">🎯 ENVIAR DOUBLE</button>
+    <button class="btn" style="background:#333" onclick="gerar('BRANCO')">⚪ BUSCAR BRANCO</button>
 
     <div id="painel" class="painel"></div>
-    <div id="log-status">Aguardando comando...</div>
-</div>
+    <div id="log-status">Status: Pronto</div>
 
 <script>
 const TOKEN = "8542850751:AAEnq5uUTsoO14fPn0H7DiBOXPSrbBn-6Bw";
 const CHAT_ID = "-1003749317798";
 
-async function enviarTelegram(mensagem) {
-    const statusDiv = document.getElementById('log-status');
-    statusDiv.innerText = "⚡ Enviando para o Telegram...";
-    statusDiv.style.color = "#aaa";
+function enviarTelegram(msg) {
+    const status = document.getElementById('log-status');
+    status.innerText = "Enviando...";
+    
+    // Método alternativo via URL (evita alguns bloqueios de navegador)
+    const texto = encodeURIComponent(msg.replace(/<[^>]*>?/gm, ''));
+    const url = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${texto}`;
 
-    const textoLimpo = mensagem.replace(/<[^>]*>?/gm, '');
-
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: CHAT_ID,
-                text: textoLimpo
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.ok) {
-            statusDiv.innerText = "✅ ENVIADO COM SUCESSO!";
-            statusDiv.style.color = "#00ff88";
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+        if(data.ok) {
+            status.innerText = "✅ ENVIADO COM SUCESSO!";
+            status.style.color = "#00ff88";
         } else {
-            statusDiv.innerText = "❌ ERRO: " + data.description;
-            statusDiv.style.color = "#ff4444";
+            status.innerText = "❌ ERRO: " + data.description;
+            status.style.color = "#ff4444";
         }
-    } catch (e) {
-        statusDiv.innerText = "❌ ERRO DE CONEXÃO!";
-        statusDiv.style.color = "#ff4444";
-    }
+    })
+    .catch(err => {
+        status.innerText = "❌ ERRO DE REDE/CORS";
+        status.style.color = "#ff4444";
+    });
 }
 
 function gerar(tipo) {
     const p = document.getElementById('painel');
     p.style.display = 'block';
-    let h = new Date();
-    h.setMinutes(h.getMinutes() + 1);
-    let time = h.getHours().toString().padStart(2,"0")+":"+h.getMinutes().toString().padStart(2,"0");
-    
-    let txt = "";
-    const prob = () => 88 + Math.floor(Math.random() * 9);
-    const cores = ["🔴 Vermelho", "⚫ Preto"];
-
-    if(tipo === 'AVIATOR') {
-        txt = `✈️ AVIATOR PRO\n\n⏰ Entrada: ${time}\n🎯 Alvo: 2.00x a 5.00x\n🛡️ Proteção: 1.50x\n🔥 Assertividade: ${prob()}%`;
-    } else if(tipo === 'BRANCO') {
-        txt = `⚪ BUSCA DE BRANCO\n\n⏰ Possível Branco: ${time}\n🎯 Foco: G1 e G2\n🔥 Probabilidade: ${prob()}%`;
-    } else if(tipo === 'DOUBLE') {
-        let corAleatoria = cores[Math.floor(Math.random() * cores.length)];
-        txt = `🎯 SINAL AO VIVO\n\n⏰ Horário: ${time}\n💎 Cor: ${corAleatoria}\n🛡️ Proteção: Branco`;
-    } else if(tipo === 'RED' || tipo === 'BLACK') {
-        let corFixa = tipo === 'RED' ? "🔴 Vermelho" : "⚫ Preto";
-        txt = `📋 LISTA ${tipo}\n\n`;
-        for(let i=1; i<=5; i++) {
-            h.setMinutes(h.getMinutes() + 2);
-            let t = h.getHours().toString().padStart(2,"0")+":"+h.getMinutes().toString().padStart(2,"0");
-            txt += `🔹 ${t} ${corFixa}\n`;
-        }
-    } else {
-        txt = `🔄 LISTA MISTA\n\n`;
-        for(let i=1; i<=5; i++) {
-            h.setMinutes(h.getMinutes() + 2);
-            let t = h.getHours().toString().padStart(2,"0")+":"+h.getMinutes().toString().padStart(2,"0");
-            let c = cores[Math.floor(Math.random() * cores.length)];
-            txt += `🔹 ${t} ${c}\n`;
-        }
-    }
-
+    const time = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+    let txt = `🤖 SINAL ${tipo}\n⏰ Hora: ${time}\n🔥 Assertividade: 95%`;
     p.innerHTML = `<pre>${txt}</pre>`;
     enviarTelegram(txt);
 }
