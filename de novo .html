@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>NEURAL FORCE v9.1 - FULL VIP</title>
+    <style>
+        :root{ --bg:#0b0b0f; --accent:#aa66ff; }
+        body{ background:var(--bg); font-family:sans-serif; color:#fff; display:flex; flex-direction:column; align-items:center; padding:20px; }
+        .app{ width:100%; max-width:400px; }
+        .btn{ width:100%; padding:16px; margin-bottom:10px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; color:#fff; text-transform:uppercase; }
+        .status-header{ text-align:center; font-size:11px; color:var(--accent); margin-bottom:20px; border:1px solid #2d2d3a; padding:12px; border-radius:10px; }
+        .painel{ background:#1a1a24; border-radius:15px; padding:15px; border:1px solid #2d2d3a; margin-top:15px; display:none; }
+        #log-status { font-size: 10px; text-align: center; margin-top: 5px; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <div class="status-header">SISTEMA NEURAL v9.1 // PRONTO</div>
+    
+    <button class="btn" style="background:#ff003c" onclick="gerar('AVIATOR')">✈️ ENVIAR AVIATOR</button>
+    <button class="btn" style="background:#0500ff" onclick="gerar('DOUBLE')">🎯 ENVIAR SINAL AO VIVO</button>
+    
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+        <button class="btn" style="background:#cc0000" onclick="gerar('RED')">🔴 LISTA RED</button>
+        <button class="btn" style="background:#222; border:1px solid #444" onclick="gerar('BLACK')">⚫ LISTA BLACK</button>
+    </div>
+
+    <div id="painel" class="painel"></div>
+    <div id="log-status">Aguardando comando...</div>
+</div>
+
+<script>
+const TOKEN = "8542850751:AAEnq5uUTsoO14fPn0H7DiBOXPSrbBn-6Bw";
+const CHAT_ID = "-1003749317798";
+
+async function enviarTelegram(mensagem) {
+    const statusDiv = document.getElementById('log-status');
+    statusDiv.innerText = "Enviando para o Telegram...";
+    
+    // Removendo tags HTML para evitar erro na API
+    const textoSemHtml = mensagem.replace(/<[^>]*>?/gm, '');
+
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: textoSemHtml
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.ok) {
+            statusDiv.style.color = "#00ff88";
+            statusDiv.innerText = "✅ ENVIADO COM SUCESSO!";
+        } else {
+            statusDiv.style.color = "#ff4444";
+            statusDiv.innerText = "❌ ERRO: " + data.description;
+        }
+    } catch (e) {
+        statusDiv.style.color = "#ff4444";
+        statusDiv.innerText = "❌ ERRO DE CONEXÃO (Pode ser bloqueio do navegador)";
+        console.error(e);
+    }
+}
+
+function gerar(tipo) {
+    const p = document.getElementById('painel');
+    p.style.display = 'block';
+    let h = new Date();
+    h.setMinutes(h.getMinutes() + 1);
+    let time = h.getHours().toString().padStart(2,"0")+":"+h.getMinutes().toString().padStart(2,"0");
+    
+    let txt = "";
+    if(tipo === 'AVIATOR') txt = `✈️ AVIATOR PRO\n⏰ Entrada: ${time}\n🎯 Alvo: 2.00x`;
+    else if(tipo === 'DOUBLE') txt = `🎯 SINAL AO VIVO\n⏰ Horário: ${time}\n💎 Cor: ALEATÓRIA`;
+    else txt = `📋 LISTA ${tipo} GERADA PARA ${time}`;
+
+    p.innerHTML = `<pre style="margin:0; color:#00ff88">${txt}</pre>`;
+    enviarTelegram(txt);
+}
+</script>
+</body>
+</html>
